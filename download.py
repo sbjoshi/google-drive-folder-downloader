@@ -90,6 +90,7 @@ def download_folder(service, folder_id, location, folder_name):
             break
 
     result = sorted(result, key=lambda k: k['name'])
+    print(result)
 
     total = len(result)
     current = 1
@@ -99,17 +100,35 @@ def download_folder(service, folder_id, location, folder_name):
         mime_type = item['mimeType']
         print(f'{file_id} {filename} {mime_type} ({current}/{total})')
         if mime_type == 'application/vnd.google-apps.folder':
+            print(f"Starting to download folder {filename} \n")
             download_folder(service, file_id, location, filename)
         elif not os.path.isfile(location + filename):
+            print(f"Starting to download file {filename} \n")
             download_file(service, file_id, location, filename, mime_type)
         current += 1
 
 def download_file(service, file_id, location, filename, mime_type):
 
-    if 'vnd.google-apps' in mime_type:
+    if 'vnd.google-apps.spreadsheet' in mime_type:
         request = service.files().export_media(fileId=file_id,
-                mimeType='application/pdf')
-        filename += '.pdf'
+                mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        filename += '.xlsx'
+    elif 'vnd.google-apps.document' in mime_type:
+        request = service.files().export_media(fileId=file_id,
+                mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+        filename += '.docx'
+    elif 'vnd.google-apps.presentation' in mime_type:
+        request = service.files().export_media(fileId=file_id,
+                mimeType='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+        filename += '.pptx'
+    elif 'vnd.google-apps.presentation' in mime_type:
+        request = service.files().export_media(fileId=file_id,
+                mimeType='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+        filename += '.pptx'
+    elif 'vnd.google-apps.script' in mime_type:
+        request = service.files().export_media(fileId=file_id,
+                mimeType='text/plain')
+        filename += '.gs'
     else:
         request = service.files().get_media(fileId=file_id)
     fh = io.FileIO(location + filename, 'wb')

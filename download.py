@@ -129,8 +129,17 @@ def download_file(service, file_id, location, filename, mime_type):
         request = service.files().export_media(fileId=file_id,
                 mimeType='text/plain')
         filename += '.gs'
+    elif 'pdf' in mime_type:
+        request = service.files().get_media(fileId=file_id)
+        filename += '.pdf'
+    elif 'application/msword' in mime_type:
+        request = service.files().get_media(fileId=file_id)
+        filename += '.doc'
     else:
         request = service.files().get_media(fileId=file_id)
+
+    if os.path.isfile(location + filename):
+        return
     fh = io.FileIO(location + filename, 'wb')
     downloader = MediaIoBaseDownload(fh, request, 1024 * 1024 * 1024)
     done = False
